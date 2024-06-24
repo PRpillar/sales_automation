@@ -1,4 +1,6 @@
 import requests
+import os
+import json
 
 def get_list_statuses(list_id, access_token):
     url = f"https://api.clickup.com/api/v2/list/{list_id}"
@@ -17,7 +19,7 @@ def get_list_statuses(list_id, access_token):
         return None
 
 # Replace 'YOUR_ACCESS_TOKEN' with your actual ClickUp API token
-access_token = 'pk_50289732_V33LDONURP1N1Y2O1Q5UN6QT19Z1F4W6'
+access_token = os.getenv('CLICKUP_API_KEY') or json.load(open('credentials.json'))['CLICKUP_API_KEY']
 list_id = "42370637"
 
 # Retrieve statuses for the list
