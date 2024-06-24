@@ -1,0 +1,27 @@
+name: Daily Task Creation
+
+on:
+  schedule:
+    # Schedule to run daily at 2 AM Moscow Time (UTC+3)
+    - cron: '0 23 * * *'  # This is 11 PM UTC, which corresponds to 2 AM Moscow Time (UTC+3)
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Specify your Python version here
+
+    - name: Install dependencies
+      run: |
+        pip install requests
+
+    - name: Run the script
+      run: python main.py
+      env:
+        CLICKUP_API_KEY: ${{ secrets.CLICKUP_API_KEY }}
