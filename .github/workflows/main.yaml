@@ -4,6 +4,7 @@ on:
   schedule:
     # Schedule to run daily at 2 AM Moscow Time (UTC+3)
     - cron: '0 23 * * *'  # This is 11 PM UTC, which corresponds to 2 AM Moscow Time (UTC+3)
+  workflow_dispatch:
 
 jobs:
   run_script:
