@@ -1,21 +1,24 @@
 import os
 import json
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from dateutil.relativedelta import relativedelta
 
 def calculate_dates(day_of_month):
-    today = datetime.now()
+    today = datetime.now(timezone.utc)  # Ensuring the script uses UTC
     current_year = today.year
     current_month = today.month
     next_month = current_month + 1 if current_month < 12 else 1
     next_month_year = current_year if current_month < 12 else current_year + 1
 
     if today.day < day_of_month:
-        start_date = datetime(current_year, current_month, day_of_month)
+        start_date = datetime(current_year, current_month, day_of_month, tzinfo=timezone.utc)
     else:
-        start_date = datetime(next_month_year, next_month, day_of_month)
+        start_date = datetime(next_month_year, next_month, day_of_month, tzinfo=timezone.utc)
 
-    end_date = datetime(start_date.year, start_date.month, day_of_month) - timedelta(days=1)
+    # Calculate the end date by adding one month and then subtracting one day
+    end_date = start_date + relativedelta(months=1) - timedelta(days=1)
+
     task_creation_date = start_date - timedelta(days=7)
 
     return task_creation_date, start_date, end_date
@@ -51,9 +54,10 @@ def create_task(title, list_id, access_token, due_date):
         'Content-Type': 'application/json'
     }
 
-    # Setting the due date to the end of the day
-    due_date_end_of_day = datetime.combine(due_date, datetime.max.time())
-    due_timestamp = int(due_date_end_of_day.timestamp() * 1000)  # Convert to milliseconds
+    # Convert due_date to UTC+3 for Moscow time, if running in UTC
+    moscow_time = timezone(timedelta(hours=3))
+    due_date = datetime.combine(due_date, datetime.min.time()).astimezone(moscow_time)
+    due_timestamp = int(due_date.timestamp() * 1000)  # Convert to milliseconds
 
     data = {
         "name": title,
