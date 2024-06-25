@@ -54,7 +54,6 @@ def create_task(title, list_id, access_token, due_date):
         'Content-Type': 'application/json'
     }
 
-    # Convert due_date to UTC+3 for Moscow time, if running in UTC
     moscow_time = timezone(timedelta(hours=3))
     due_date = datetime.combine(due_date, datetime.min.time()).astimezone(moscow_time)
     due_timestamp = int(due_date.timestamp() * 1000)  # Convert to milliseconds
@@ -64,11 +63,47 @@ def create_task(title, list_id, access_token, due_date):
         "description": "Automatically created task for billing period.",
         "due_date": due_timestamp
     }
+
+    print(f"Creating task with data: {data}")  # Debug: Show task creation data
+
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-        print("Task created successfully:", title)
+        new_task_id = response.json().get('id')
+        print(f"Task created successfully: {title}, ID: {new_task_id}")
+        return new_task_id  # Return the new task ID for linking
     else:
-        print("Failed to create task:", response.status_code, response.text)
+        print(f"Failed to create task: {response.status_code} {response.text}")
+        return None
+
+
+def set_relationship_field(task_id, field_id, access_token, add_ids=None, remove_ids=None):
+    url = f"https://api.clickup.com/api/v2/task/{task_id}/field/{field_id}"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": access_token
+    }
+
+    value_payload = {}
+    if add_ids:
+        value_payload['add'] = add_ids
+    if remove_ids:
+        value_payload['rem'] = remove_ids
+
+    payload = {
+        "value": value_payload
+    }
+
+    print(f"Updating task {task_id} with relationship field {field_id} and payload: {payload}")  # Debug: Show update data
+
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code in [200, 201]:
+        print("Task relationship updated successfully.")
+        data = response.json()
+        print(data)
+    else:
+        print(f"Failed to update task relationship: {response.status_code} {response.text}")     
+
 
 # Load the API Key
 access_token = os.getenv('CLICKUP_API_KEY') or json.load(open('credentials.json'))['CLICKUP_API_KEY']
@@ -77,9 +112,18 @@ list_id = "42370637"
 destination_list_id = "901201953178"
 status_id = "sc42370637_Zea9lI9k"
 custom_field_id = "dcd50ff8-4bed-4df2-a59b-3ce491837ae3"
+relationship_field_id = '29aafb0f-2e62-4425-b409-5f21538b3c3c' 
+
 
 tasks_to_create = get_tasks_with_conditions(list_id, custom_field_id, status_id, access_token)
-for task, start_date, end_date in tasks_to_create:
-    title = f"{start_date.strftime('%Y-%m-%d')} - {end_date.strftime('%Y-%m-%d')}, {task['name']}"
-    # Assuming today is the task creation date and also the due date
-    create_task(title, destination_list_id, access_token, datetime.now().date())
+for task_info in tasks_to_create:
+    original_task, start_date, end_date = task_info
+    title = f"{start_date.strftime('%Y-%m-%d')} - {end_date.strftime('%Y-%m-%d')}, {original_task['name']}"
+
+    # Create the new task and get the new task ID
+    new_task_id = create_task(title, destination_list_id, access_token, datetime.now().date())
+
+    # If task creation was successful, set the relationship
+    if new_task_id:
+        add_ids = [original_task['id']]  # List of task IDs to link to, could be more than one
+        set_relationship_field(new_task_id, relationship_field_id, access_token, add_ids=add_ids)
