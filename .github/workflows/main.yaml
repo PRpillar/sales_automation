@@ -2,8 +2,7 @@ name: Daily Task Creation
 
 on:
   schedule:
-    # Schedule to run daily at 2 AM Moscow Time (UTC+3)
-    - cron: '0 23 * * *'  # This is 11 PM UTC, which corresponds to 2 AM Moscow Time (UTC+3)
+    - cron: '0 02 * * *'  # This is 2 AM UTC, which corresponds to 5 AM Moscow Time (UTC+3)
   workflow_dispatch:
 
 jobs:
