@@ -163,6 +163,11 @@ cython_debug/
 
 
 misc.txt
-.csv
+*.csv
 credentials.json
 relationships.py
+backup_comments.py
+backup_docs.py
+backup.py
+it.py
+.DS_Store
