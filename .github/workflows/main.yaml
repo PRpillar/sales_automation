@@ -25,3 +25,7 @@ jobs:
       run: python main.py
       env:
         CLICKUP_API_KEY: ${{ secrets.CLICKUP_API_KEY }}
+        SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+        SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        SMTP_USER: ${{ secrets.SMTP_USER }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
