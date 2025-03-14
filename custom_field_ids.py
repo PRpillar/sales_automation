@@ -19,7 +19,7 @@ def get_custom_fields(list_id, access_token):
 
 # Replace 'YOUR_ACCESS_TOKEN' with your actual ClickUp API token
 access_token = os.getenv('CLICKUP_API_KEY') or json.load(open('credentials.json'))['CLICKUP_API_KEY']
-list_id = "42370637"
+list_id = "901200839358"
 
 # Retrieve custom fields
 custom_fields = get_custom_fields(list_id, access_token)
